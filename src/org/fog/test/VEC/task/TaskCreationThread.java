@@ -1,5 +1,6 @@
 package org.fog.test.VEC.task;
 
+import org.fog.test.VEC.config.SimConstants;
 import org.fog.test.VEC.infrastructure.*;
 import org.fog.test.VEC.scheduler.MLScheduler;
 import org.fog.test.VEC.utils.ConsoleFormatter;
@@ -15,8 +16,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * the infrastructure state is refreshed. The task + infrastructure are then
  * sent to the ML predictor to obtain the offload decision.
  *
+ * Each task is assigned to a random vehicle from the vehicle pool.
+ * RSU topology is changed dynamically at configurable intervals.
+ *
  * Task parameters generated:
- *   - mobility_status (LOW, MEDIUM, HIGH)
+ *   - mobility_status (low, medium, high)
  *   - signal_strength (dBm)
  *   - critical_task (0 or 1)
  *   - bandwidth_mbps
@@ -42,34 +46,51 @@ public class TaskCreationThread implements Runnable {
     public void run() {
         System.out.println("\n[CREATION] Thread started.");
         Random rand = new Random();
-        long endTime = System.currentTimeMillis() + (durationSec * 1000L);
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + (durationSec * 1000L);
         boolean headerPrinted = false;
         int taskNum = 0;
+        long lastTopologyChange = startTime;
 
         while (System.currentTimeMillis() < endTime) {
             taskNum++;
+            long now = System.currentTimeMillis();
 
-            // Generate task
-            Task task = generateTask(rand);
+            // ── Dynamic RSU topology change ──
+            if (now - lastTopologyChange >= SimConstants.RSU_TOPOLOGY_CHANGE_INTERVAL_SEC * 1000L) {
+                if (headerPrinted) {
+                    ConsoleFormatter.printTaskTableFooter();
+                    headerPrinted = false;
+                }
+                scheduler.getInfraManager().changeRsuTopology();
+                scheduler.printInfrastructureHealth();
+                lastTopologyChange = now;
+            }
 
-            // Print table header once
+            // Pick a random vehicle as the task originator
+            Vehicle sourceVehicle = scheduler.getRandomVehicle();
+
+            // Generate task from this vehicle
+            Task task = generateTask(rand, sourceVehicle);
+
+            // Print table header once (or after topology change)
             if (!headerPrinted) {
                 ConsoleFormatter.printHeader("TASK GENERATION & ML OFFLOADING");
                 ConsoleFormatter.printTaskTableHeader();
                 headerPrinted = true;
             }
 
-            // Print infrastructure health every 5 tasks (not on the first)
+            // Print infrastructure health every 5 tasks
             if (taskNum > 1 && taskNum % 5 == 1) {
                 ConsoleFormatter.printTaskTableFooter();
                 scheduler.printInfrastructureHealth();
                 ConsoleFormatter.printTaskTableHeader();
             }
 
-            // Call ML predictor with infrastructure state
+            // Call ML predictor with current infrastructure state
             MLOffloadPredictor.OffloadDecision decision = MLOffloadPredictor.predict(
                     task,
-                    scheduler.getLocalVehicle(),
+                    scheduler.getLocalVehicle(sourceVehicle.getId()),
                     scheduler.getCloud(),
                     scheduler.getRsus()
             );
@@ -92,8 +113,10 @@ public class TaskCreationThread implements Runnable {
 
             try {
                 createdTaskQueue.put(new TaskWithDecision(task, decision));
-                // Simulate inter-arrival time: Poisson-like with mean ~2 seconds
-                Thread.sleep(1000 + rand.nextInt(2000));
+                // Simulate inter-arrival time
+                int interval = SimConstants.TASK_INTERVAL_MIN_MS
+                        + rand.nextInt(SimConstants.TASK_INTERVAL_MAX_MS - SimConstants.TASK_INTERVAL_MIN_MS);
+                Thread.sleep(interval);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -106,18 +129,30 @@ public class TaskCreationThread implements Runnable {
         System.out.println("[CREATION] Thread finished. Total tasks created: " + taskNum);
     }
 
-    private Task generateTask(Random rand) {
+    private Task generateTask(Random rand, Vehicle sourceVehicle) {
         String taskId = "TASK_" + taskCounter.incrementAndGet();
-        String vehicleId = scheduler.getLocalVehicle().getId();
+        String vehicleId = sourceVehicle.getId();
 
-        Task.MobilityStatus[] statuses = Task.MobilityStatus.values();
-        Task.MobilityStatus mobility = statuses[rand.nextInt(statuses.length)];
+        // Weighted mobility: 50% LOW, 35% MEDIUM, 15% HIGH
+        double mobilityRoll = rand.nextDouble();
+        Task.MobilityStatus mobility;
+        if (mobilityRoll < SimConstants.MOBILITY_LOW_PROB) {
+            mobility = Task.MobilityStatus.LOW;
+        } else if (mobilityRoll < SimConstants.MOBILITY_MED_PROB) {
+            mobility = Task.MobilityStatus.MEDIUM;
+        } else {
+            mobility = Task.MobilityStatus.HIGH;
+        }
 
-        int signalStrength = -(30 + rand.nextInt(61));          // -30 to -90 dBm
-        int critical = rand.nextDouble() < 0.2 ? 1 : 0;        // 20% critical
-        double bandwidth = 5.0 + rand.nextDouble() * 45.0;      // 5 - 50 Mbps
-        int instructions = 1000 + rand.nextInt(9000);            // 1000 - 10000 MI
-        double taskSize = 1.0 + rand.nextDouble() * 49.0;       // 1 - 50 MB
+        int signalStrength = SimConstants.SIGNAL_MIN_DBM
+                + rand.nextInt(SimConstants.SIGNAL_MAX_DBM - SimConstants.SIGNAL_MIN_DBM + 1);
+        int critical = rand.nextDouble() < SimConstants.CRITICAL_TASK_PROBABILITY ? 1 : 0;
+        double bandwidth = SimConstants.BANDWIDTH_MIN_MBPS
+                + rand.nextDouble() * (SimConstants.BANDWIDTH_MAX_MBPS - SimConstants.BANDWIDTH_MIN_MBPS);
+        int instructions = SimConstants.INSTRUCTIONS_MIN
+                + rand.nextInt(SimConstants.INSTRUCTIONS_MAX - SimConstants.INSTRUCTIONS_MIN);
+        double taskSize = SimConstants.TASK_SIZE_MIN_MB
+                + rand.nextDouble() * (SimConstants.TASK_SIZE_MAX_MB - SimConstants.TASK_SIZE_MIN_MB);
 
         return new Task(taskId, vehicleId, mobility, signalStrength,
                 critical, bandwidth, instructions, taskSize);

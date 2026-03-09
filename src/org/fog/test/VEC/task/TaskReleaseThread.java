@@ -1,5 +1,6 @@
 package org.fog.test.VEC.task;
 
+import org.fog.test.VEC.config.SimConstants;
 import org.fog.test.VEC.scheduler.MLScheduler;
 
 import java.util.concurrent.*;
@@ -36,7 +37,7 @@ public class TaskReleaseThread implements Runnable {
     @Override
     public void run() {
         System.out.println("[RELEASE] Thread started.");
-        long endTime = System.currentTimeMillis() + (durationSec * 1000L) + 10000; // extra 10s
+        long endTime = System.currentTimeMillis() + (durationSec * 1000L) + SimConstants.RELEASE_GRACE_MS;
 
         // Internal list of tasks waiting for completion
         List<Task> waitingTasks = new ArrayList<>();
@@ -60,21 +61,20 @@ public class TaskReleaseThread implements Runnable {
                     t.getAssignedNode().release(t.getAllocatedMips(), t.getAllocatedRamMB());
                     t.markCompleted();
 
-                    // Task completed silently
                     scheduler.recordCompletion(t);
                     it.remove();
                 }
             }
 
             try {
-                Thread.sleep(100); // check every 100ms
+                Thread.sleep(SimConstants.RELEASE_POLL_INTERVAL_MS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
 
             // Safety exit
-            if (System.currentTimeMillis() > endTime + 15000) break;
+            if (System.currentTimeMillis() > endTime + SimConstants.RELEASE_SAFETY_EXIT_MS) break;
         }
         System.out.println("[RELEASE] Thread finished.");
     }

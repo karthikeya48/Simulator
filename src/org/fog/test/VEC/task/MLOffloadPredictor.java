@@ -1,5 +1,6 @@
 package org.fog.test.VEC.task;
 
+import org.fog.test.VEC.config.SimConstants;
 import org.fog.test.VEC.infrastructure.*;
 
 import java.io.*;
@@ -18,13 +19,13 @@ import java.util.Map;
  * {
  *   "bandwidth_mbps": 20,
  *   "critical_task": 1,
- *   "mobility_status": "High",
+ *   "mobility_status": "low",
  *   "number_of_instructions_mips": 1000,
  *   "Infrastructure": {
- *     "local": { "mips_available": 100, "ram_mb": 1000 },
- *     "cloud": { "mips_available": 10000, "ram_mb": 16000 },
+ *     "local": { "mips_available": 5000, "ram_mb": 8000 },
+ *     "cloud": { "mips_available": 500000, "ram_mb": 512000 },
  *     "Rsu": {
- *       "RSU1": { "mips_available": 2500, "ram_mb": 4000, "bandwidth_mbps": 50, "sinr": 25 },
+ *       "RSU1": { "mips_available": 25000, "ram_mb": 32000, "bandwidth_mbps": 100, "sinr": 28 },
  *       ...
  *     }
  *   }
@@ -39,8 +40,8 @@ import java.util.Map;
  */
 public class MLOffloadPredictor {
 
-    private static final String PREDICT_URL = "http://127.0.0.1:8000/predict";
-    private static final int TIMEOUT_MS = 5000;
+    private static final String PREDICT_URL = SimConstants.ML_PREDICT_URL;
+    private static final int TIMEOUT_MS = SimConstants.ML_TIMEOUT_MS;
 
     /**
      * Queries the ML model with task + infrastructure state.
@@ -230,19 +231,34 @@ public class MLOffloadPredictor {
     }
 
     /**
-     * Rule-based fallback when ML service is unavailable:
-     *   - Critical task + high mobility → Cloud (stable backhaul)
-     *   - Good signal + low mobility    → RSU
-     *   - Otherwise                     → Local vehicle
+     * Rule-based fallback when ML service is unavailable.
+     *
+     * Priority order (biased toward edge):
+     *   1. LOCAL  — if task is small and mobility is low
+     *   2. RSU    — if signal is good enough and instructions are moderate
+     *   3. CLOUD  — only for large, critical, high-mobility tasks
+     *
+     * This mirrors the expected ML behaviour under normal conditions.
      */
     private static OffloadDecision ruleBasedFallback(Task task) {
-        if (task.getCriticalTask() == 1 && task.getMobilityStatus() == Task.MobilityStatus.HIGH) {
+        boolean highMobility  = task.getMobilityStatus() == Task.MobilityStatus.HIGH;
+        boolean lowMobility   = task.getMobilityStatus() == Task.MobilityStatus.LOW;
+        boolean critical      = task.getCriticalTask() == 1;
+        int     instructions  = task.getNumberOfInstructions();
+        double  bandwidth     = task.getBandwidthMbps();
+
+        // Cloud: only critical + high-mobility + heavy compute
+        if (critical && highMobility && instructions > 4000) {
             return new OffloadDecision("cloud", null, null);
         }
-        if (task.getNumberOfInstructions() > 5000 && task.getBandwidthMbps() > 15) {
-            return new OffloadDecision("rsu", "RSU1", null);
+
+        // Local: light tasks with low mobility
+        if (lowMobility && instructions <= 2000) {
+            return new OffloadDecision("local", null, null);
         }
-        return new OffloadDecision("local", null, null);
+
+        // RSU: everything else (moderate/heavy tasks, medium/high mobility)
+        return new OffloadDecision("rsu", "RSU1", null);
     }
 
     /**

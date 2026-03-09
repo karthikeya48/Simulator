@@ -43,9 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MLScheduler {
 
-    private final CloudServer cloud;
-    private final List<RSUServer> rsus;
-    private final Vehicle localVehicle;
+    private final InfrastructureManager infraManager;
 
     // Statistics
     private final AtomicInteger totalAssigned = new AtomicInteger(0);
@@ -57,30 +55,36 @@ public class MLScheduler {
     private final AtomicInteger localAssigned = new AtomicInteger(0);
     private final List<Task> allCompletedTasks = Collections.synchronizedList(new ArrayList<>());
 
-    public MLScheduler(CloudServer cloud, List<RSUServer> rsus, Vehicle localVehicle) {
-        this.cloud = cloud;
-        this.rsus = rsus;
-        this.localVehicle = localVehicle;
+    public MLScheduler(InfrastructureManager infraManager) {
+        this.infraManager = infraManager;
     }
 
-    // --- Getters for infrastructure ---
-    public CloudServer getCloud() { return cloud; }
-    public List<RSUServer> getRsus() { return rsus; }
-    public Vehicle getLocalVehicle() { return localVehicle; }
+    // --- Delegated getters for infrastructure ---
+    public CloudServer getCloud() { return infraManager.getCloud(); }
+    public List<RSUServer> getRsus() { return infraManager.getActiveRsus(); }
+    public List<Vehicle> getVehicles() { return infraManager.getVehicles(); }
+    public InfrastructureManager getInfraManager() { return infraManager; }
+
+    /**
+     * Get the local vehicle for a task. Uses the vehicle ID stored in the task
+     * to find the matching vehicle instance.
+     */
+    public Vehicle getLocalVehicle(String vehicleId) {
+        return infraManager.getVehicleById(vehicleId);
+    }
+
+    /** Get a random vehicle for task generation */
+    public Vehicle getRandomVehicle() {
+        return infraManager.getRandomVehicle();
+    }
 
     /**
      * Assign a task based on the ML prediction decision.
-     *
-     * @param task     The task to assign
-     * @param decision The ML offloading decision
-     * @return true if task was successfully assigned, false otherwise
      */
     public synchronized boolean assignTask(Task task, MLOffloadPredictor.OffloadDecision decision) {
-        ComputeNode targetNode = resolveTargetNode(decision);
+        ComputeNode targetNode = resolveTargetNode(task, decision);
 
         if (targetNode == null) {
-            System.out.printf("  [SCHEDULER] No valid target node for %s (decision=%s)%n",
-                    task.getTaskId(), decision.actnetDecision);
             return false;
         }
 
@@ -98,8 +102,9 @@ public class MLScheduler {
             incrementTargetCounter(targetNode);
             return true;
         } else {
-            // Fallback: if local or RSU has insufficient resources, try cloud
+            // Fallback: if local or RSU has insufficient resources, allocate to cloud
             if (!"cloud".equals(decision.actnetDecision.toLowerCase())) {
+                CloudServer cloud = infraManager.getCloud();
                 if (cloud.allocate(requiredMips, requiredRam)) {
                     task.setOffloadDecision(true, "cloud");
                     task.assignTo(cloud, requiredMips, requiredRam);
@@ -115,12 +120,14 @@ public class MLScheduler {
     /**
      * Resolve the target compute node from the ML decision.
      */
-    private ComputeNode resolveTargetNode(MLOffloadPredictor.OffloadDecision decision) {
+    private ComputeNode resolveTargetNode(Task task, MLOffloadPredictor.OffloadDecision decision) {
+        List<RSUServer> rsus = infraManager.getActiveRsus();
+
         switch (decision.actnetDecision.toLowerCase()) {
             case "local":
-                return localVehicle;
+                return infraManager.getVehicleById(task.getVehicleId());
             case "cloud":
-                return cloud;
+                return infraManager.getCloud();
             case "rsu":
                 if (decision.targetNodeName != null) {
                     for (RSUServer rsu : rsus) {
@@ -128,8 +135,6 @@ public class MLScheduler {
                             return rsu;
                         }
                     }
-                    System.out.printf("  [SCHEDULER] Target RSU '%s' not found, using first available RSU%n",
-                            decision.targetNodeName);
                 }
                 // Fallback: use first RSU with capacity
                 for (RSUServer rsu : rsus) {
@@ -139,7 +144,7 @@ public class MLScheduler {
                 }
                 return rsus.isEmpty() ? null : rsus.get(0);
             default:
-                return localVehicle;
+                return infraManager.getVehicleById(task.getVehicleId());
         }
     }
 
@@ -189,6 +194,7 @@ public class MLScheduler {
         ConsoleFormatter.printInfrastructureHeader();
 
         // Cloud
+        CloudServer cloud = infraManager.getCloud();
         ConsoleFormatter.printInfrastructureRow(
                 cloud.getId(), cloud.getNodeType(),
                 cloud.getTotalMips(), cloud.getAvailableMips(),
@@ -198,7 +204,7 @@ public class MLScheduler {
         );
 
         // RSUs
-        for (RSUServer rsu : rsus) {
+        for (RSUServer rsu : infraManager.getActiveRsus()) {
             ConsoleFormatter.printInfrastructureRow(
                     rsu.getId(), rsu.getNodeType(),
                     rsu.getTotalMips(), rsu.getAvailableMips(),
@@ -208,14 +214,16 @@ public class MLScheduler {
             );
         }
 
-        // Local Vehicle
-        ConsoleFormatter.printInfrastructureRow(
-                localVehicle.getId() + " (Local)", localVehicle.getNodeType(),
-                localVehicle.getTotalMips(), localVehicle.getAvailableMips(),
-                localVehicle.getTotalRamMB(), localVehicle.getAvailableRamMB(),
-                localVehicle.getCpuUtilization(), localVehicle.getRamUtilization(),
-                localVehicle.getHealthScore(), localVehicle.getActiveTasks()
-        );
+        // All Vehicles
+        for (Vehicle v : infraManager.getVehicles()) {
+            ConsoleFormatter.printInfrastructureRow(
+                    v.getId(), v.getNodeType(),
+                    v.getTotalMips(), v.getAvailableMips(),
+                    v.getTotalRamMB(), v.getAvailableRamMB(),
+                    v.getCpuUtilization(), v.getRamUtilization(),
+                    v.getHealthScore(), v.getActiveTasks()
+            );
+        }
 
         ConsoleFormatter.printInfrastructureFooter();
     }

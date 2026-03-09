@@ -26,7 +26,7 @@ public class SimulationLogger {
     // Infrastructure references
     private CloudServer cloud;
     private List<RSUServer> rsus;
-    private Vehicle localVehicle;
+    private List<Vehicle> vehicles;
 
     // Statistics
     private int totalAssigned = 0;
@@ -50,10 +50,10 @@ public class SimulationLogger {
         return instance;
     }
 
-    public void initialize(CloudServer cloud, List<RSUServer> rsus, Vehicle localVehicle, int durationSec) {
+    public void initialize(CloudServer cloud, List<RSUServer> rsus, List<Vehicle> vehicles, int durationSec) {
         this.cloud = cloud;
         this.rsus = new ArrayList<>(rsus);
-        this.localVehicle = localVehicle;
+        this.vehicles = new ArrayList<>(vehicles);
         this.simulationDurationSec = durationSec;
         this.simulationStartTime = System.currentTimeMillis();
     }
@@ -76,10 +76,16 @@ public class SimulationLogger {
     }
 
     public void captureInfrastructureSnapshot(String label) {
+        NodeSnapshot[] vehicleSnapshots = vehicles.stream()
+                .map(v -> new NodeSnapshot(v.getId(), "VEHICLE", v.getTotalMips(), v.getAvailableMips(),
+                                          v.getTotalRamMB(), v.getAvailableRamMB(),
+                                          v.getCpuUtilization(), v.getRamUtilization(), v.getHealthScore()))
+                .toArray(NodeSnapshot[]::new);
+
         InfrastructureSnapshot snapshot = new InfrastructureSnapshot(
             System.currentTimeMillis() - simulationStartTime,
             label,
-            new NodeSnapshot("CLOUD_1", "CLOUD", cloud.getTotalMips(), cloud.getAvailableMips(),
+            new NodeSnapshot("CLOUD_DC", "CLOUD", cloud.getTotalMips(), cloud.getAvailableMips(),
                            cloud.getTotalRamMB(), cloud.getAvailableRamMB(),
                            cloud.getCpuUtilization(), cloud.getRamUtilization(), cloud.getHealthScore()),
             rsus.stream()
@@ -87,9 +93,7 @@ public class SimulationLogger {
                                          r.getTotalRamMB(), r.getAvailableRamMB(),
                                          r.getCpuUtilization(), r.getRamUtilization(), r.getHealthScore()))
                 .toArray(NodeSnapshot[]::new),
-            new NodeSnapshot("VEH_LOCAL", "VEHICLE", localVehicle.getTotalMips(), localVehicle.getAvailableMips(),
-                           localVehicle.getTotalRamMB(), localVehicle.getAvailableRamMB(),
-                           localVehicle.getCpuUtilization(), localVehicle.getRamUtilization(), localVehicle.getHealthScore())
+            vehicleSnapshots
         );
         infrastructureSnapshots.add(snapshot);
     }
@@ -193,7 +197,7 @@ public class SimulationLogger {
         out.println("                    <tr><td><strong>End Time</strong></td><td>" + sdf.format(new Date(simulationEndTime)) + "</td></tr>");
         out.println("                    <tr><td><strong>Duration</strong></td><td>" + (durationMs / 1000.0) + " seconds</td></tr>");
         out.println("                    <tr><td><strong>ML Endpoint</strong></td><td>http://127.0.0.1:8000/predict</td></tr>");
-        out.println("                    <tr><td><strong>Infrastructure</strong></td><td>1 Cloud Server, " + rsus.size() + " RSU Servers, 1 Local Vehicle</td></tr>");
+        out.println("                    <tr><td><strong>Infrastructure</strong></td><td>1 Cloud Server, " + rsus.size() + " RSU Servers, " + vehicles.size() + " Vehicles</td></tr>");
         out.println("                </table>");
         out.println("            </div>");
     }
@@ -324,7 +328,9 @@ public class SimulationLogger {
             }
 
             // Local Vehicle
-            writeNodeRow(out, snapshot.localVehicle);
+            for (NodeSnapshot vehicle : snapshot.vehicles) {
+                writeNodeRow(out, vehicle);
+            }
 
             out.println("                    </tbody>");
             out.println("                </table>");
@@ -430,15 +436,15 @@ public class SimulationLogger {
         String label;
         NodeSnapshot cloud;
         NodeSnapshot[] rsus;
-        NodeSnapshot localVehicle;
+        NodeSnapshot[] vehicles;
 
         InfrastructureSnapshot(long timestamp, String label, NodeSnapshot cloud,
-                             NodeSnapshot[] rsus, NodeSnapshot localVehicle) {
+                             NodeSnapshot[] rsus, NodeSnapshot[] vehicles) {
             this.timestamp = timestamp;
             this.label = label;
             this.cloud = cloud;
             this.rsus = rsus;
-            this.localVehicle = localVehicle;
+            this.vehicles = vehicles;
         }
     }
 

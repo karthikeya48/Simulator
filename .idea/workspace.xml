@@ -5,34 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d9dd0b5d-487c-4680-a57f-434d3aedd814" name="Changes" comment="git ignote updated and files are ready to merge">
-      <change afterPath="$PROJECT_DIR$/00_START_HERE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DELIVERABLES.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FORMATTED_OUTPUT_COMPLETE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GET_STARTED_INDEX.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/IEEE_VEC_DOCUMENTATION.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/IMPLEMENTATION_SUMMARY.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/PROJECT_COMPLETION_SUMMARY.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/QUICK_REFERENCE.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README_VEC_SIMULATOR.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/VEC_Simulator.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/VEC_Simulator_Report.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build_and_run.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build_and_run.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/infrastructure/CloudServer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/infrastructure/ComputeNode.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/infrastructure/RSUServer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/infrastructure/Vehicle.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/Task.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/HTMLReportGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/SimulationLogger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/SimulationLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/SimulationLogger.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,12 +36,12 @@
     &quot;assignee&quot;: &quot;mgoudarzi90&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Cloudslab/iFogSim.git&quot;,
-    &quot;accountId&quot;: &quot;5bc4c63e-f33a-4ff9-8a30-4bbee17b65a9&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/karthikeya48/Simulator.git",
+    "accountId": "5bc4c63e-f33a-4ff9-8a30-4bbee17b65a9"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>

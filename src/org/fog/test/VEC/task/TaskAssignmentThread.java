@@ -1,5 +1,6 @@
 package org.fog.test.VEC.task;
 
+import org.fog.test.VEC.config.SimConstants;
 import org.fog.test.VEC.scheduler.MLScheduler;
 import org.fog.test.VEC.task.TaskCreationThread.TaskWithDecision;
 
@@ -38,7 +39,7 @@ public class TaskAssignmentThread implements Runnable {
     @Override
     public void run() {
         System.out.println("[ASSIGN] Thread started.");
-        long endTime = System.currentTimeMillis() + (durationSec * 1000L) + 5000; // extra 5s grace
+        long endTime = System.currentTimeMillis() + (durationSec * 1000L) + SimConstants.ASSIGNMENT_GRACE_MS;
 
         while (System.currentTimeMillis() < endTime) {
             try {
@@ -54,13 +55,9 @@ public class TaskAssignmentThread implements Runnable {
                     double execTime = task.computeSimulatedExecTimeMs();
                     task.setSimulatedExecTimeMs(execTime);
 
-                    // Assignment logged silently; details visible in task table
-
                     runningTaskQueue.put(task);
                 } else {
                     task.setState(Task.TaskState.FAILED);
-                    System.out.printf("[ASSIGN] %s → FAILED (no capacity on %s)%n",
-                            task.getTaskId(), decision.actnetDecision);
                     scheduler.recordFailure();
                 }
             } catch (InterruptedException e) {

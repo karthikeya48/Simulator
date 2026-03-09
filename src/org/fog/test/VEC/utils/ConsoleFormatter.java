@@ -1,5 +1,10 @@
 package org.fog.test.VEC.utils;
 
+import org.fog.test.VEC.infrastructure.RSUServer;
+import org.fog.test.VEC.infrastructure.Vehicle;
+
+import java.util.List;
+
 /**
  * Utility class for formatted console output.
  * Provides tabular display for tasks, infrastructure health, and statistics.
@@ -186,6 +191,53 @@ public class ConsoleFormatter {
     private static void printStatRow(String metric, String value) {
         System.out.printf(YELLOW + "│ " + RESET + "%-26s " + YELLOW + "│ " + RESET + "%27s " + YELLOW + "│" + RESET + "%n",
                 metric, value);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  RSU SETUP TABLE
+    // ─────────────────────────────────────────────────────────
+    public static void printRsuSetupTable(List<RSUServer> rsus) {
+        System.out.println(CYAN + "  ┌──────────┬────────────┬────────────┬─────────────┬───────────┐" + RESET);
+        System.out.printf(CYAN + "  │" + BOLD + WHITE + " %-8s " + RESET +
+                        CYAN + "│" + BOLD + WHITE + " %-10s " + RESET +
+                        CYAN + "│" + BOLD + WHITE + " %-10s " + RESET +
+                        CYAN + "│" + BOLD + WHITE + " %-11s " + RESET +
+                        CYAN + "│" + BOLD + WHITE + " %-9s " + RESET +
+                        CYAN + "│" + RESET + "%n",
+                "RSU ID", "MIPS", "RAM (MB)", "BW (Mbps)", "SINR (dB)");
+        System.out.println(CYAN + "  ├──────────┼────────────┼────────────┼─────────────┼───────────┤" + RESET);
+        for (RSUServer rsu : rsus) {
+            System.out.printf(CYAN + "  │" + RESET + " %-8s " +
+                            CYAN + "│" + RESET + " %,10d " +
+                            CYAN + "│" + RESET + " %,10d " +
+                            CYAN + "│" + RESET + " %9.0f   " +
+                            CYAN + "│" + RESET + " %7.1f   " +
+                            CYAN + "│" + RESET + "%n",
+                    rsu.getId(), rsu.getTotalMips(), rsu.getTotalRamMB(),
+                    rsu.getBandwidthMbps(), rsu.getSinr());
+        }
+        System.out.println(CYAN + "  └──────────┴────────────┴────────────┴─────────────┴───────────┘" + RESET);
+    }
+
+    // ─────────────────────────────────────────────────────────
+    //  VEHICLE SETUP TABLE
+    // ─────────────────────────────────────────────────────────
+    public static void printVehicleSetupTable(List<Vehicle> vehicles) {
+        System.out.println(GREEN + "  ┌──────────────┬────────────┬────────────┐" + RESET);
+        System.out.printf(GREEN + "  │" + BOLD + WHITE + " %-12s " + RESET +
+                        GREEN + "│" + BOLD + WHITE + " %-10s " + RESET +
+                        GREEN + "│" + BOLD + WHITE + " %-10s " + RESET +
+                        GREEN + "│" + RESET + "%n",
+                "Vehicle ID", "MIPS", "RAM (MB)");
+        System.out.println(GREEN + "  ├──────────────┼────────────┼────────────┤" + RESET);
+        for (Vehicle v : vehicles) {
+            System.out.printf(GREEN + "  │" + RESET + " %-12s " +
+                            GREEN + "│" + RESET + " %,10d " +
+                            GREEN + "│" + RESET + " %,10d " +
+                            GREEN + "│" + RESET + "%n",
+                    v.getId(), v.getTotalMips(), v.getTotalRamMB());
+        }
+        System.out.println(GREEN + "  └──────────────┴────────────┴────────────┘" + RESET);
     }
 
     // ─────────────────────────────────────────────────────────
