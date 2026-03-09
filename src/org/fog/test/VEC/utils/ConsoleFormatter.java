@@ -241,6 +241,49 @@ public class ConsoleFormatter {
     }
 
     // ─────────────────────────────────────────────────────────
+    //  FEDERATED LEARNING TABLES
+    // ─────────────────────────────────────────────────────────
+
+    /**
+     * Print a single FL round summary inline during simulation.
+     */
+    public static void printFederatedRoundSummary(int round, int updates, double avgLoss, boolean aggregated) {
+        String status = aggregated
+                ? GREEN + "AGGREGATED" + RESET
+                : RED  + "AGG FAILED" + RESET;
+        System.out.printf("%n  " + MAGENTA + "[FL Round %d]" + RESET +
+                        "  Updates: %d  |  Avg Loss: %.4f  |  %s%n",
+                round, updates, avgLoss, status);
+    }
+
+    /**
+     * Print final FL statistics at end of simulation.
+     */
+    public static void printFederatedLearningSummary(int totalRounds, int totalUpdates,
+                                                     int failedUpdates, int roundSize) {
+        System.out.println();
+        System.out.println(MAGENTA + "╔" + "═".repeat(60) + "╗" + RESET);
+        System.out.println(MAGENTA + "║  " + BOLD + WHITE + padRight("FEDERATED LEARNING SUMMARY", 56) + RESET + MAGENTA + "  ║" + RESET);
+        System.out.println(MAGENTA + "╚" + "═".repeat(60) + "╝" + RESET);
+        System.out.println();
+        System.out.println(MAGENTA + "┌────────────────────────────┬─────────────────────────────┐" + RESET);
+        System.out.printf(MAGENTA + "│ " + BOLD + WHITE + "%-26s" + RESET + MAGENTA + " │ " + BOLD + WHITE + "%-27s" + RESET + MAGENTA + " │" + RESET + "%n", "Metric", "Value");
+        System.out.println(MAGENTA + "├────────────────────────────┼─────────────────────────────┤" + RESET);
+
+        printFLStatRow("FedAvg Rounds Completed", String.valueOf(totalRounds));
+        printFLStatRow("Local Updates Sent", String.valueOf(totalUpdates));
+        printFLStatRow("Failed Updates", String.valueOf(failedUpdates));
+        printFLStatRow("Round Size (K)", String.valueOf(roundSize));
+
+        System.out.println(MAGENTA + "└────────────────────────────┴─────────────────────────────┘" + RESET);
+    }
+
+    private static void printFLStatRow(String metric, String value) {
+        System.out.printf(MAGENTA + "│ " + RESET + "%-26s " + MAGENTA + "│ " + RESET + "%27s " + MAGENTA + "│" + RESET + "%n",
+                metric, value);
+    }
+
+    // ─────────────────────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────────────────────
     private static String getDecisionColor(String decision) {

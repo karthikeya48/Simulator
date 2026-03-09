@@ -10,7 +10,8 @@ import java.util.*;
  * Thread 3: Task Release
  *
  * Monitors running tasks. After their simulated execution time elapses,
- * releases allocated resources from the compute node.
+ * releases allocated resources from the compute node and pushes the
+ * completed task to the federated learning queue.
  *
  * Uses manual time diff to track execution:
  *   elapsed = currentTime - assignmentTime
@@ -24,12 +25,15 @@ import java.util.*;
 public class TaskReleaseThread implements Runnable {
 
     private final BlockingQueue<Task> runningTaskQueue;
+    private final BlockingQueue<Task> federatedQueue;
     private final MLScheduler scheduler;
     private final int durationSec;
 
     public TaskReleaseThread(BlockingQueue<Task> runningTaskQueue,
+                             BlockingQueue<Task> federatedQueue,
                              MLScheduler scheduler, int durationSec) {
         this.runningTaskQueue = runningTaskQueue;
+        this.federatedQueue = federatedQueue;
         this.scheduler = scheduler;
         this.durationSec = durationSec;
     }
@@ -62,6 +66,10 @@ public class TaskReleaseThread implements Runnable {
                     t.markCompleted();
 
                     scheduler.recordCompletion(t);
+
+                    // Push to federated learning queue
+                    federatedQueue.offer(t);
+
                     it.remove();
                 }
             }

@@ -5,15 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d9dd0b5d-487c-4680-a57f-434d3aedd814" name="Changes" comment="git ignote updated and files are ready to merge">
+      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/FederatedLearningThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/config/SimConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/config/SimConstants.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/SimulationLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/SimulationLogger.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

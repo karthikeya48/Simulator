@@ -19,7 +19,7 @@ public final class SimConstants {
     //  SIMULATION PARAMETERS
     // ═══════════════════════════════════════════════════════════
     /** Total simulation duration in seconds */
-    public static final int SIMULATION_DURATION_SEC = 120;
+    public static final int SIMULATION_DURATION_SEC = 15;
 
     /** ML prediction endpoint URL */
     public static final String ML_PREDICT_URL = "http://127.0.0.1:8000/predict";
@@ -145,5 +145,37 @@ public final class SimConstants {
     public static final int RELEASE_SAFETY_EXIT_MS = 15000;
     /** Release thread polling interval (ms) */
     public static final int RELEASE_POLL_INTERVAL_MS = 100;
+
+    // ═══════════════════════════════════════════════════════════
+    //  FEDERATED LEARNING PARAMETERS
+    //
+    //  After each task completes, the originating vehicle sends a
+    //  local training update to /local_update.  Once FEDERATED_ROUND_SIZE
+    //  updates have been collected, the simulator triggers /aggregate
+    //  to perform Federated Averaging (FedAvg) on the global model.
+    //
+    //  Reference: McMahan et al., "Communication-Efficient Learning
+    //             of Deep Networks from Decentralized Data", AISTATS 2017
+    //
+    //  w_global = (1/K) Σ w_k   (FedAvg)
+    // ═══════════════════════════════════════════════════════════
+
+    /** Base URL for the ML/FL server */
+    public static final String FL_BASE_URL = "http://127.0.0.1:8000";
+
+    /** POST /local_update endpoint */
+    public static final String FL_LOCAL_UPDATE_URL = FL_BASE_URL + "/local_update";
+
+    /** POST /aggregate endpoint */
+    public static final String FL_AGGREGATE_URL = FL_BASE_URL + "/aggregate";
+
+    /** Number of local updates to collect before triggering aggregation (one FL round) */
+    public static final int FEDERATED_ROUND_SIZE = 5;
+
+    /** HTTP timeout for FL calls (ms) */
+    public static final int FL_TIMEOUT_MS = 8000;
+
+    /** Grace period for the FL thread after simulation ends (ms) */
+    public static final int FL_GRACE_MS = 12000;
 }
 
