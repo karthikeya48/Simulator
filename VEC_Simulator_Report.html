@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>VEC Simulator Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        .content { padding: 30px; }
+        .section { margin-bottom: 40px; }
+        .section h2 { color: #667eea; border-left: 5px solid #667eea; padding-left: 15px; margin-bottom: 20px; font-size: 1.8em; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 2.5em; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 0.9em; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+        thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        th { padding: 15px; text-align: left; font-weight: 600; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
+        tbody tr:hover { background: #f8f9ff; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }
+        .badge-cloud { background: #e3d5ff; color: #764ba2; }
+        .badge-rsu { background: #d5f0ff; color: #0066cc; }
+        .badge-local { background: #d5ffd5; color: #2d8c2d; }
+        .badge-yes { background: #ffcccc; color: #cc0000; }
+        .badge-no { background: #ccffcc; color: #00cc00; }
+        .health-healthy { background: #d4edda; color: #155724; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .health-good { background: #cce5ff; color: #004085; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .health-fair { background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .health-poor { background: #f8d7da; color: #721c24; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .health-critical { background: #f5c6cb; color: #721c24; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .log-container { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; max-height: 500px; overflow-y: auto; }
+        .log-entry { margin-bottom: 5px; line-height: 1.6; }
+        .timestamp { color: #4ec9b0; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; border-top: 1px solid #e0e0e0; }
+        .chart-container { background: #f8f9ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🚗 Vehicular Edge Computing Simulator</h1>
+            <p>ML-Driven Offloading Decision System v2.0</p>
+        </div>
+        <div class='content'>
+            <div class='section'>
+                <h2>📋 Simulation Overview</h2>
+                <table>
+                    <tr><td><strong>Start Time</strong></td><td>2026-03-03 22:57:19</td></tr>
+                    <tr><td><strong>End Time</strong></td><td>2026-03-03 22:58:00</td></tr>
+                    <tr><td><strong>Duration</strong></td><td>40.185 seconds</td></tr>
+                    <tr><td><strong>ML Endpoint</strong></td><td>http://127.0.0.1:8000/predict</td></tr>
+                    <tr><td><strong>Infrastructure</strong></td><td>1 Cloud Server, 3 RSU Servers, 1 Local Vehicle</td></tr>
+                </table>
+            </div>
+            <div class='section'>
+                <h2>📊 Simulation Statistics</h2>
+                <div class='stats-grid'>
+                    <div class='stat-card'>
+                        <div class='stat-value'>8</div>
+                        <div class='stat-label'>Tasks Assigned</div>
+                    </div>
+                    <div class='stat-card'>
+                        <div class='stat-value'>6</div>
+                        <div class='stat-label'>Tasks Completed</div>
+                    </div>
+                    <div class='stat-card'>
+                        <div class='stat-value'>0</div>
+                        <div class='stat-label'>Tasks Failed</div>
+                    </div>
+                    <div class='stat-card'>
+                        <div class='stat-value'>15648 ms</div>
+                        <div class='stat-label'>Avg Latency</div>
+                    </div>
+                </div>
+                <h3 style='color: #667eea; margin-top: 20px;'>Task Distribution</h3>
+                <table>
+                    <thead><tr><th>Target</th><th>Count</th><th>Percentage</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class='badge badge-cloud'>CLOUD</span></td><td>2</td><td>25.0%</td></tr>
+                        <tr><td><span class='badge badge-rsu'>RSU</span></td><td>6</td><td>75.0%</td></tr>
+                        <tr><td><span class='badge badge-local'>LOCAL</span></td><td>0</td><td>0.0%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='section'>
+                <h2>🎯 Task Generation & ML Offloading</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Vehicle</th>
+                            <th>Mobility</th>
+                            <th>Signal (dBm)</th>
+                            <th>Critical</th>
+                            <th>BW (Mbps)</th>
+                            <th>Instructions</th>
+                            <th>Size (MB)</th>
+                            <th>ML Decision</th>
+                            <th>Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>TASK_1</td>
+                            <td>VEH_LOCAL</td>
+                            <td>LOW</td>
+                            <td>-36</td>
+                            <td><span class='badge badge-yes'>YES</span></td>
+                            <td>28.5</td>
+                            <td>5436</td>
+                            <td>9.57</td>
+                            <td><span class='badge badge-local'>LOCAL</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_2</td>
+                            <td>VEH_LOCAL</td>
+                            <td>MEDIUM</td>
+                            <td>-79</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>49.5</td>
+                            <td>9234</td>
+                            <td>33.16</td>
+                            <td><span class='badge badge-rsu'>RSU</span></td>
+                            <td>RSU3</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_3</td>
+                            <td>VEH_LOCAL</td>
+                            <td>LOW</td>
+                            <td>-64</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>38.6</td>
+                            <td>2623</td>
+                            <td>34.63</td>
+                            <td><span class='badge badge-rsu'>RSU</span></td>
+                            <td>RSU1</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_4</td>
+                            <td>VEH_LOCAL</td>
+                            <td>HIGH</td>
+                            <td>-38</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>41.2</td>
+                            <td>1207</td>
+                            <td>21.70</td>
+                            <td><span class='badge badge-cloud'>CLOUD</span></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_5</td>
+                            <td>VEH_LOCAL</td>
+                            <td>LOW</td>
+                            <td>-52</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>8.7</td>
+                            <td>2805</td>
+                            <td>29.55</td>
+                            <td><span class='badge badge-rsu'>RSU</span></td>
+                            <td>RSU1</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_6</td>
+                            <td>VEH_LOCAL</td>
+                            <td>MEDIUM</td>
+                            <td>-45</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>31.7</td>
+                            <td>6812</td>
+                            <td>49.08</td>
+                            <td><span class='badge badge-rsu'>RSU</span></td>
+                            <td>RSU3</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_7</td>
+                            <td>VEH_LOCAL</td>
+                            <td>MEDIUM</td>
+                            <td>-36</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>13.1</td>
+                            <td>1578</td>
+                            <td>44.79</td>
+                            <td><span class='badge badge-rsu'>RSU</span></td>
+                            <td>RSU1</td>
+                        </tr>
+                        <tr>
+                            <td>TASK_8</td>
+                            <td>VEH_LOCAL</td>
+                            <td>LOW</td>
+                            <td>-73</td>
+                            <td><span class='badge badge-no'>NO</span></td>
+                            <td>27.0</td>
+                            <td>1756</td>
+                            <td>4.12</td>
+                            <td><span class='badge badge-rsu'>RSU</span></td>
+                            <td>RSU1</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='section'>
+                <h2>💪 Infrastructure Health Status</h2>
+                <h3 style='color: #667eea; margin-top: 25px;'>Initial State <span style='font-size: 0.8em; color: #999;'>(0.1s)</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Type</th>
+                            <th>Total MIPS</th>
+                            <th>Avail MIPS</th>
+                            <th>Total RAM</th>
+                            <th>Avail RAM</th>
+                            <th>CPU Usage</th>
+                            <th>RAM Usage</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CLOUD_1</strong></td>
+                            <td>CLOUD</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                            <td>16000 MB</td>
+                            <td>16000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU1</strong></td>
+                            <td>RSU</td>
+                            <td>2500</td>
+                            <td>2500</td>
+                            <td>4000 MB</td>
+                            <td>4000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU2</strong></td>
+                            <td>RSU</td>
+                            <td>1800</td>
+                            <td>1800</td>
+                            <td>2000 MB</td>
+                            <td>2000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU3</strong></td>
+                            <td>RSU</td>
+                            <td>3000</td>
+                            <td>3000</td>
+                            <td>8000 MB</td>
+                            <td>8000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>VEH_LOCAL</strong></td>
+                            <td>VEHICLE</td>
+                            <td>100</td>
+                            <td>100</td>
+                            <td>1000 MB</td>
+                            <td>1000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3 style='color: #667eea; margin-top: 25px;'>Mid-Simulation Snapshot #1 <span style='font-size: 0.8em; color: #999;'>(5.1s)</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Type</th>
+                            <th>Total MIPS</th>
+                            <th>Avail MIPS</th>
+                            <th>Total RAM</th>
+                            <th>Avail RAM</th>
+                            <th>CPU Usage</th>
+                            <th>RAM Usage</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CLOUD_1</strong></td>
+                            <td>CLOUD</td>
+                            <td>10000</td>
+                            <td>9457</td>
+                            <td>16000 MB</td>
+                            <td>15990 MB</td>
+                            <td>5.4%</td>
+                            <td>0.1%</td>
+                            <td>0.967</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU1</strong></td>
+                            <td>RSU</td>
+                            <td>2500</td>
+                            <td>2238</td>
+                            <td>4000 MB</td>
+                            <td>3965 MB</td>
+                            <td>10.5%</td>
+                            <td>0.9%</td>
+                            <td>0.934</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU2</strong></td>
+                            <td>RSU</td>
+                            <td>1800</td>
+                            <td>1800</td>
+                            <td>2000 MB</td>
+                            <td>2000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU3</strong></td>
+                            <td>RSU</td>
+                            <td>3000</td>
+                            <td>2077</td>
+                            <td>8000 MB</td>
+                            <td>7966 MB</td>
+                            <td>30.8%</td>
+                            <td>0.4%</td>
+                            <td>0.814</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>VEH_LOCAL</strong></td>
+                            <td>VEHICLE</td>
+                            <td>100</td>
+                            <td>100</td>
+                            <td>1000 MB</td>
+                            <td>1000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3 style='color: #667eea; margin-top: 25px;'>Mid-Simulation Snapshot #2 <span style='font-size: 0.8em; color: #999;'>(10.1s)</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Type</th>
+                            <th>Total MIPS</th>
+                            <th>Avail MIPS</th>
+                            <th>Total RAM</th>
+                            <th>Avail RAM</th>
+                            <th>CPU Usage</th>
+                            <th>RAM Usage</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CLOUD_1</strong></td>
+                            <td>CLOUD</td>
+                            <td>10000</td>
+                            <td>9337</td>
+                            <td>16000 MB</td>
+                            <td>15968 MB</td>
+                            <td>6.6%</td>
+                            <td>0.2%</td>
+                            <td>0.959</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU1</strong></td>
+                            <td>RSU</td>
+                            <td>2500</td>
+                            <td>1958</td>
+                            <td>4000 MB</td>
+                            <td>3935 MB</td>
+                            <td>21.7%</td>
+                            <td>1.6%</td>
+                            <td>0.863</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU2</strong></td>
+                            <td>RSU</td>
+                            <td>1800</td>
+                            <td>1800</td>
+                            <td>2000 MB</td>
+                            <td>2000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU3</strong></td>
+                            <td>RSU</td>
+                            <td>3000</td>
+                            <td>2077</td>
+                            <td>8000 MB</td>
+                            <td>7966 MB</td>
+                            <td>30.8%</td>
+                            <td>0.4%</td>
+                            <td>0.814</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>VEH_LOCAL</strong></td>
+                            <td>VEHICLE</td>
+                            <td>100</td>
+                            <td>100</td>
+                            <td>1000 MB</td>
+                            <td>1000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3 style='color: #667eea; margin-top: 25px;'>Mid-Simulation Snapshot #3 <span style='font-size: 0.8em; color: #999;'>(15.1s)</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Type</th>
+                            <th>Total MIPS</th>
+                            <th>Avail MIPS</th>
+                            <th>Total RAM</th>
+                            <th>Avail RAM</th>
+                            <th>CPU Usage</th>
+                            <th>RAM Usage</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CLOUD_1</strong></td>
+                            <td>CLOUD</td>
+                            <td>10000</td>
+                            <td>9880</td>
+                            <td>16000 MB</td>
+                            <td>15978 MB</td>
+                            <td>1.2%</td>
+                            <td>0.1%</td>
+                            <td>0.992</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU1</strong></td>
+                            <td>RSU</td>
+                            <td>2500</td>
+                            <td>1626</td>
+                            <td>4000 MB</td>
+                            <td>3885 MB</td>
+                            <td>35.0%</td>
+                            <td>2.9%</td>
+                            <td>0.779</td>
+                            <td><span class='health-good'>GOOD</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU2</strong></td>
+                            <td>RSU</td>
+                            <td>1800</td>
+                            <td>1800</td>
+                            <td>2000 MB</td>
+                            <td>2000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU3</strong></td>
+                            <td>RSU</td>
+                            <td>3000</td>
+                            <td>1396</td>
+                            <td>8000 MB</td>
+                            <td>7916 MB</td>
+                            <td>53.5%</td>
+                            <td>1.1%</td>
+                            <td>0.675</td>
+                            <td><span class='health-good'>GOOD</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>VEH_LOCAL</strong></td>
+                            <td>VEHICLE</td>
+                            <td>100</td>
+                            <td>100</td>
+                            <td>1000 MB</td>
+                            <td>1000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3 style='color: #667eea; margin-top: 25px;'>Final State <span style='font-size: 0.8em; color: #999;'>(40.1s)</span></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Type</th>
+                            <th>Total MIPS</th>
+                            <th>Avail MIPS</th>
+                            <th>Total RAM</th>
+                            <th>Avail RAM</th>
+                            <th>CPU Usage</th>
+                            <th>RAM Usage</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CLOUD_1</strong></td>
+                            <td>CLOUD</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                            <td>16000 MB</td>
+                            <td>16000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU1</strong></td>
+                            <td>RSU</td>
+                            <td>2500</td>
+                            <td>2063</td>
+                            <td>4000 MB</td>
+                            <td>3925 MB</td>
+                            <td>17.5%</td>
+                            <td>1.9%</td>
+                            <td>0.888</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU2</strong></td>
+                            <td>RSU</td>
+                            <td>1800</td>
+                            <td>1800</td>
+                            <td>2000 MB</td>
+                            <td>2000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RSU3</strong></td>
+                            <td>RSU</td>
+                            <td>3000</td>
+                            <td>3000</td>
+                            <td>8000 MB</td>
+                            <td>8000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>VEH_LOCAL</strong></td>
+                            <td>VEHICLE</td>
+                            <td>100</td>
+                            <td>100</td>
+                            <td>1000 MB</td>
+                            <td>1000 MB</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td>1.000</td>
+                            <td><span class='health-healthy'>HEALTHY</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='section'>
+                <h2>📜 Simulation Event Log</h2>
+                <div class='log-container'>
+                    <div class='log-entry'>[0.00s] Simulation started</div>
+                    <div class='log-entry'>[0.01s] Infrastructure initialized: 1 Cloud, 3 RSUs, 1 Vehicle</div>
+                    <div class='log-entry'>[40.11s] Simulation completed</div>
+                </div>
+            </div>
+        </div>
+        <div class='footer'>
+            <p>Generated by VEC Simulator v2.0 | ML-Driven Offloading Decision System</p>
+            <p style='font-size: 0.9em; margin-top: 5px;'>Report generated at: 2026-03-03 22:58:00</p>
+        </div>
+    </div>
+</body>
+</html>
