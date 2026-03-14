@@ -1,30 +1,13 @@
 package org.fog.test.VEC.config;
 
-/**
- * Central configuration constants for the VEC Simulator.
- *
- * All infrastructure capacities, network parameters, task generation ranges,
- * and simulation timing are defined here for easy tuning and reproducibility.
- *
- * === Capacity Design Rationale ===
- * - Cloud: Near-infinite resources (data-center scale)
- * - RSU:   High-capacity edge servers co-located with roadside units
- * - Vehicle (Local): On-Board Unit with moderate compute capability
- */
+
 public final class SimConstants {
 
     private SimConstants() {} // prevent instantiation
 
-    // ═══════════════════════════════════════════════════════════
-    //  SIMULATION PARAMETERS
-    // ═══════════════════════════════════════════════════════════
-    /** Total simulation duration in seconds */
-    public static final int SIMULATION_DURATION_SEC = 15;
-
-    /** ML prediction endpoint URL */
+    public static final int SIMULATION_DURATION_SEC = 120;
     public static final String ML_PREDICT_URL = "http://127.0.0.1:8000/predict";
 
-    /** HTTP timeout for ML calls (ms) */
     public static final int ML_TIMEOUT_MS = 5000;
 
     // ═══════════════════════════════════════════════════════════
@@ -65,65 +48,42 @@ public final class SimConstants {
     public static final int RSU_MIN_ACTIVE = 3;
     public static final int RSU_MAX_ACTIVE = 8;
 
+    public static final int RSU_MAX_CONSECUTIVE = 2;
+
     // ═══════════════════════════════════════════════════════════
     //  VEHICLE (LOCAL OBU) CAPACITY
+    //  Boosted so local vehicles can absorb a significant share
+    //  of tasks without immediately falling back to cloud.
     // ═══════════════════════════════════════════════════════════
-    public static final int VEHICLE_MIPS = 8_000;      // 8,000 MIPS per vehicle (boosted)
-    public static final int VEHICLE_RAM_MB = 12_000;    // 12 GB RAM per vehicle (boosted)
+    public static final int VEHICLE_MIPS = 15_000;      // 15,000 MIPS per vehicle
+    public static final int VEHICLE_RAM_MB = 16_000;    // 16 GB RAM per vehicle
     public static final double VEHICLE_PROPAGATION_DELAY_MS = 1.0;
 
-    /** Number of vehicles in the simulation */
     public static final int NUM_VEHICLES = 6;
 
-    /** Vehicle ID prefix */
     public static final String VEHICLE_ID_PREFIX = "VEH";
 
     // ═══════════════════════════════════════════════════════════
     //  TASK GENERATION PARAMETERS
-    //  Biased toward RSU / local offloading:
-    //    • Stronger signal   → RSU link is viable
-    //    • Lower MIPS        → local/edge can handle it
-    //    • Higher bandwidth  → edge transfer is fast
-    //    • Smaller task size → fits in edge RAM easily
-    //    • Less critical     → no forced cloud routing
-    //    • LOW/MED mobility  → vehicle stays near RSU longer
     // ═══════════════════════════════════════════════════════════
 
-    /** Signal strength range (dBm) — biased to stronger signal (-30 to -65) */
-    public static final int SIGNAL_MIN_DBM = -65;
+    public static final int SIGNAL_MIN_DBM = -80;
     public static final int SIGNAL_MAX_DBM = -30;
 
-    /**
-     * Probability of a task being critical.
-     * Lower = fewer tasks forced to cloud.
-     */
     public static final double CRITICAL_TASK_PROBABILITY = 0.10;
 
-    /** Bandwidth range (Mbps) — higher floor means edge transfer is fast */
     public static final double BANDWIDTH_MIN_MBPS = 20.0;
     public static final double BANDWIDTH_MAX_MBPS = 100.0;
 
-    /**
-     * Number of instructions range (MI).
-     * Lower min so the ML sees micro-tasks that fit locally.
-     */
-    public static final int INSTRUCTIONS_MIN = 200;
+    public static final int INSTRUCTIONS_MIN = 300;
     public static final int INSTRUCTIONS_MAX = 5_000;
 
-    /** Task size range (MB) — smaller tasks fit comfortably in edge RAM */
     public static final double TASK_SIZE_MIN_MB = 1.0;
-    public static final double TASK_SIZE_MAX_MB = 20.0;
+    public static final double TASK_SIZE_MAX_MB = 15.0;
 
-    /** Task inter-arrival time range (ms) — Poisson-like */
     public static final int TASK_INTERVAL_MIN_MS = 800;
     public static final int TASK_INTERVAL_MAX_MS = 2500;
 
-    /**
-     * Mobility weight table (cumulative probability).
-     * 50 % LOW  → stays near RSU, local viable
-     * 35 % MED  → moderate, RSU preferred
-     * 15 % HIGH → may push to cloud
-     */
     public static final double MOBILITY_LOW_PROB  = 0.50;
     public static final double MOBILITY_MED_PROB  = 0.85; // cumulative (LOW + MED)
 
@@ -147,6 +107,26 @@ public final class SimConstants {
     public static final int RELEASE_POLL_INTERVAL_MS = 100;
 
     // ═══════════════════════════════════════════════════════════
+    //  TASK EXECUTION HOLD TIME PARAMETERS
+    //  Each task holds its allocated resources for a computed duration:
+    //    holdTime = (T_exec + T_transfer + T_prop) * EXEC_TIME_SCALE_FACTOR
+    //              + EXEC_TIME_BASE_HOLD_MS
+    //
+    // ═══════════════════════════════════════════════════════════
+    /**
+     * Scale factor applied to computed simulated execution time.
+     * T_hold_scaled = T_sim * EXEC_TIME_SCALE_FACTOR
+     * A value of 1.0 means real-time; higher values make tasks hold longer.
+     */
+    public static final double EXEC_TIME_SCALE_FACTOR = 3.5;
+
+    /**
+     * Minimum base hold time (ms) every task holds resources for,
+     * regardless of how small the computed execution time is.
+     */
+    public static final long EXEC_TIME_BASE_HOLD_MS = 1500;
+
+    // ═══════════════════════════════════════════════════════════
     //  FEDERATED LEARNING PARAMETERS
     //
     //  After each task completes, the originating vehicle sends a
@@ -159,6 +139,8 @@ public final class SimConstants {
     //
     //  w_global = (1/K) Σ w_k   (FedAvg)
     // ═══════════════════════════════════════════════════════════
+
+    public static final boolean FL_ENABLED = false;
 
     /** Base URL for the ML/FL server */
     public static final String FL_BASE_URL = "http://127.0.0.1:8000";

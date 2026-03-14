@@ -95,7 +95,39 @@ public class TaskCreationThread implements Runnable {
                     scheduler.getRsus()
             );
 
-            // Print task row with ML decision
+            // ── Critical-task local-first override (display) ──────────
+            // If the task is critical and the local vehicle has enough
+            // resources, the scheduler will force-assign it locally.
+            // Reflect this override in the displayed decision so the
+            // table accurately shows the FINAL offloading target.
+            String displayDecision = decision.actnetDecision;
+            String displayTarget   = decision.targetNodeName;
+
+            if (task.getCriticalTask() == 1) {
+                Vehicle localVehicle = scheduler.getLocalVehicle(sourceVehicle.getId());
+                if (localVehicle != null) {
+                    int requiredMips = Math.max(60, task.getNumberOfInstructions() / 8);
+                    int requiredRam  = Math.max(4, (int) Math.ceil(task.getTaskSizeMB() * 2));
+                    if (localVehicle.getAvailableMips() >= requiredMips
+                            && localVehicle.getAvailableRamMB() >= requiredRam) {
+                        displayDecision = "local";
+                        displayTarget   = sourceVehicle.getId();
+                        // Also update the decision object so the assignment
+                        // thread uses the same override consistently.
+                        decision = new MLOffloadPredictor.OffloadDecision("local", sourceVehicle.getId(), null);
+                    }
+                }
+            }
+
+            // ── RSU load-balanced display ─────────────────────────────
+            // When the decision is RSU, preview which RSU the scheduler's
+            // fairness-aware algorithm will actually select, so the table
+            // shows the real target instead of the raw ML suggestion.
+            if ("rsu".equalsIgnoreCase(displayDecision)) {
+                displayTarget = scheduler.previewRsuTarget(decision);
+            }
+
+            // Print task row with final decision
             ConsoleFormatter.printTaskRowWithDecision(
                     task.getTaskId(),
                     task.getVehicleId(),
@@ -105,8 +137,8 @@ public class TaskCreationThread implements Runnable {
                     task.getBandwidthMbps(),
                     task.getNumberOfInstructions(),
                     task.getTaskSizeMB(),
-                    decision.actnetDecision,
-                    decision.targetNodeName
+                    displayDecision,
+                    displayTarget
             );
 
             task.setState(Task.TaskState.QUEUED);

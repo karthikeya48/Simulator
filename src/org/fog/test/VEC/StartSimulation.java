@@ -9,28 +9,6 @@ import org.fog.test.VEC.scheduler.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-/**
- * VEC Simulator Entry Point
- *
- * Launches four concurrent threads:
- *   1. TaskCreationThread       – generates tasks from multiple vehicles,
- *                                  queries ML endpoint for offload decision,
- *                                  triggers dynamic RSU topology changes
- *   2. TaskAssignmentThread     – allocates resources on the ML-chosen target node
- *   3. TaskReleaseThread        – monitors completion, releases resources,
- *                                  feeds completed tasks to the FL pipeline
- *   4. FederatedLearningThread  – sends /local_update per completed task,
- *                                  triggers /aggregate every K tasks (FedAvg)
- *
- * Infrastructure (configurable via SimConstants):
- *   - 1 Cloud Server   : near-infinite capacity (500K MIPS, 512 GB RAM)
- *   - N RSU Servers     : high-capacity edge nodes, dynamically added/removed
- *   - M Vehicles (local): each with its own OBU compute resources
- *
- * ML Endpoint : http://127.0.0.1:8000/predict
- * FL Endpoints: http://127.0.0.1:8000/local_update
- *               http://127.0.0.1:8000/aggregate
- */
 public class StartSimulation {
 
     public static void main(String[] args) {
@@ -54,9 +32,13 @@ public class StartSimulation {
         System.out.println();
         System.out.println("  [INFO] Simulation duration : " + SimConstants.SIMULATION_DURATION_SEC + " seconds");
         System.out.println("  [INFO] ML Endpoint         : " + SimConstants.ML_PREDICT_URL);
-        System.out.println("  [INFO] FL Local Update      : " + SimConstants.FL_LOCAL_UPDATE_URL);
-        System.out.println("  [INFO] FL Aggregate         : " + SimConstants.FL_AGGREGATE_URL);
-        System.out.println("  [INFO] FL Round Size (K)    : " + SimConstants.FEDERATED_ROUND_SIZE);
+        if (SimConstants.FL_ENABLED) {
+            System.out.println("  [INFO] FL Local Update      : " + SimConstants.FL_LOCAL_UPDATE_URL);
+            System.out.println("  [INFO] FL Aggregate         : " + SimConstants.FL_AGGREGATE_URL);
+            System.out.println("  [INFO] FL Round Size (K)    : " + SimConstants.FEDERATED_ROUND_SIZE);
+        } else {
+            System.out.println("  [INFO] Federated Learning  : DISABLED");
+        }
         System.out.println("  [INFO] Vehicles            : " + SimConstants.NUM_VEHICLES);
         System.out.println("  [INFO] Initial RSUs        : " + infraManager.getActiveRsus().size());
         System.out.println("  [INFO] RSU topology change  : every " + SimConstants.RSU_TOPOLOGY_CHANGE_INTERVAL_SEC + "s");
@@ -67,7 +49,9 @@ public class StartSimulation {
         // ──────────────────────────────────────────────
         BlockingQueue<TaskWithDecision> createdTaskQueue = new LinkedBlockingQueue<>();
         BlockingQueue<Task> runningTaskQueue  = new LinkedBlockingQueue<>();
-        BlockingQueue<Task> federatedQueue    = new LinkedBlockingQueue<>();
+        // Federated queue is only needed when FL is enabled
+        BlockingQueue<Task> federatedQueue    = SimConstants.FL_ENABLED
+                ? new LinkedBlockingQueue<>() : null;
 
         // ──────────────────────────────────────────────
         //  3. Build ML Scheduler
@@ -98,20 +82,28 @@ public class StartSimulation {
                 new TaskReleaseThread(runningTaskQueue, federatedQueue, scheduler, SimConstants.SIMULATION_DURATION_SEC),
                 "TaskRelease-Thread");
 
-        Thread flThread = new Thread(
-                new FederatedLearningThread(federatedQueue, SimConstants.SIMULATION_DURATION_SEC),
-                "FederatedLearning-Thread");
+        Thread flThread = null;
+
+        if (SimConstants.FL_ENABLED) {
+            flThread = new Thread(
+                    new FederatedLearningThread(federatedQueue, SimConstants.SIMULATION_DURATION_SEC),
+                    "FederatedLearning-Thread");
+        }
 
         creationThread.start();
         assignmentThread.start();
         releaseThread.start();
-        flThread.start();
+        if (flThread != null) {
+            flThread.start();
+        }
 
         try {
             creationThread.join();
             assignmentThread.join();
             releaseThread.join();
-            flThread.join();
+            if (flThread != null) {
+                flThread.join();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

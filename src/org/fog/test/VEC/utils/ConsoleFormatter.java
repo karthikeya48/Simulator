@@ -284,6 +284,61 @@ public class ConsoleFormatter {
     }
 
     // ─────────────────────────────────────────────────────────
+    //  TASK EXECUTION DETAILS TABLE
+    //  Shows per-task resource hold times and execution metrics
+    // ─────────────────────────────────────────────────────────
+    public static void printTaskExecutionHeader() {
+        System.out.println();
+        System.out.println(CYAN + "╔" + "═".repeat(130) + "╗" + RESET);
+        System.out.println(CYAN + "║  " + BOLD + WHITE + padRight("TASK EXECUTION & RESOURCE HOLD DETAILS", 126) + RESET + CYAN + "  ║" + RESET);
+        System.out.println(CYAN + "╚" + "═".repeat(130) + "╝" + RESET);
+        System.out.println();
+        System.out.println(BLUE + "┌──────────┬────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬───────────┬──────────────┐" + RESET);
+        System.out.printf(BLUE + "│" + BOLD + WHITE + " %-8s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-10s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-12s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-12s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-12s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-12s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-12s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-9s " + RESET +
+                        BLUE + "│" + BOLD + WHITE + " %-12s " + RESET +
+                        BLUE + "│" + RESET + "%n",
+                "Task ID", "Target", "Exec (ms)", "Transfer(ms)", "Prop (ms)", "Hold (ms)", "MIPS Alloc", "RAM (MB)", "State");
+        System.out.println(BLUE + "├──────────┼────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼───────────┼──────────────┤" + RESET);
+    }
+
+    public static void printTaskExecutionRow(String taskId, String target,
+                                             double execMs, double transferMs, double propMs,
+                                             long holdMs, int allocMips, int allocRam,
+                                             String state) {
+        String stateColor;
+        switch (state) {
+            case "COMPLETED": stateColor = GREEN; break;
+            case "RUNNING":   stateColor = YELLOW; break;
+            case "FAILED":    stateColor = RED; break;
+            default:          stateColor = WHITE; break;
+        }
+
+        System.out.printf(BLUE + "│" + RESET + " %-8s " +
+                        BLUE + "│" + RESET + " %-10s " +
+                        BLUE + "│" + RESET + " %10.2f   " +
+                        BLUE + "│" + RESET + " %10.2f   " +
+                        BLUE + "│" + RESET + " %10.2f   " +
+                        BLUE + "│" + RESET + " %10d   " +
+                        BLUE + "│" + RESET + " %10d   " +
+                        BLUE + "│" + RESET + " %7d   " +
+                        BLUE + "│" + RESET + " %s%-12s" + RESET + " " +
+                        BLUE + "│" + RESET + "%n",
+                taskId, target, execMs, transferMs, propMs, holdMs,
+                allocMips, allocRam, stateColor, state);
+    }
+
+    public static void printTaskExecutionFooter() {
+        System.out.println(BLUE + "└──────────┴────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴───────────┴──────────────┘" + RESET);
+    }
+
+    // ─────────────────────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────────────────────
     private static String getDecisionColor(String decision) {

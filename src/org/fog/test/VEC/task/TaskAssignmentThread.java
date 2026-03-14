@@ -55,6 +55,15 @@ public class TaskAssignmentThread implements Runnable {
                     double execTime = task.computeSimulatedExecTimeMs();
                     task.setSimulatedExecTimeMs(execTime);
 
+                    // Compute resource hold duration:
+                    //   T_hold = T_sim * scaleFactor + baseHold
+                    long holdDurationMs = Math.max(
+                            SimConstants.EXEC_TIME_BASE_HOLD_MS,
+                            (long) (execTime * SimConstants.EXEC_TIME_SCALE_FACTOR)
+                                    + SimConstants.EXEC_TIME_BASE_HOLD_MS
+                    );
+                    task.setResourceHold(holdDurationMs);
+
                     runningTaskQueue.put(task);
                 } else {
                     task.setState(Task.TaskState.FAILED);

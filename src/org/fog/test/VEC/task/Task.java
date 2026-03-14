@@ -36,6 +36,8 @@ public class Task {
     private volatile long assignmentTimeMs;
     private volatile long completionTimeMs;
     private volatile double simulatedExecTimeMs; // computed execution time
+    private volatile long resourceHoldUntilMs;   // absolute wall-clock time when resources can be released
+    private volatile long resourceHoldDurationMs; // how long (ms) this task holds resources
 
     public Task(String taskId, String vehicleId, MobilityStatus mobilityStatus,
                 int signalStrength, int criticalTask, double bandwidthMbps,
@@ -71,6 +73,8 @@ public class Task {
     public long getAssignmentTimeMs() { return assignmentTimeMs; }
     public long getCompletionTimeMs() { return completionTimeMs; }
     public double getSimulatedExecTimeMs() { return simulatedExecTimeMs; }
+    public long getResourceHoldUntilMs() { return resourceHoldUntilMs; }
+    public long getResourceHoldDurationMs() { return resourceHoldDurationMs; }
 
     // --- Setters ---
     public void setOffloadDecision(boolean isOffloaded, String offloadTarget) {
@@ -89,6 +93,23 @@ public class Task {
     }
 
     public void setSimulatedExecTimeMs(double t) { this.simulatedExecTimeMs = t; }
+
+    /**
+     * Set the resource hold deadline.
+     * @param holdDurationMs how long (ms) the task should hold resources
+     */
+    public void setResourceHold(long holdDurationMs) {
+        this.resourceHoldDurationMs = holdDurationMs;
+        this.resourceHoldUntilMs = System.currentTimeMillis() + holdDurationMs;
+    }
+
+    /**
+     * Returns true if the task's resource hold period has elapsed.
+     */
+    public boolean isResourceHoldExpired() {
+        return System.currentTimeMillis() >= resourceHoldUntilMs;
+    }
+
     public void markCompleted() {
         this.completionTimeMs = System.currentTimeMillis();
         this.state.set(TaskState.COMPLETED);

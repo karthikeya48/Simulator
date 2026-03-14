@@ -5,10 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d9dd0b5d-487c-4680-a57f-434d3aedd814" name="Changes" comment="git ignote updated and files are ready to merge">
-      <change afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/FederatedLearningThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_and_run.bat" beforeDir="false" afterPath="$PROJECT_DIR$/build_and_run.bat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/StartSimulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/config/SimConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/config/SimConstants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/scheduler/MLScheduler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/MLOffloadPredictor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskAssignmentThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskCreationThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/task/TaskReleaseThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/org/fog/test/VEC/utils/ConsoleFormatter.java" afterDir="false" />
     </list>
@@ -33,12 +38,12 @@
     &quot;assignee&quot;: &quot;mgoudarzi90&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/karthikeya48/Simulator.git",
-    "accountId": "5bc4c63e-f33a-4ff9-8a30-4bbee17b65a9"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/karthikeya48/Simulator.git&quot;,
+    &quot;accountId&quot;: &quot;5bc4c63e-f33a-4ff9-8a30-4bbee17b65a9&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -50,7 +55,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Application.CardiovascularHealthMonitoringApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Application.StartSimulation.executor&quot;: &quot;Run&quot;,
+    &quot;Application.StartSimulation.executor&quot;: &quot;Debug&quot;,
     &quot;Application.TranslationServiceFog_Clustering.executor&quot;: &quot;Run&quot;,
     &quot;Application.TwoApps.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,

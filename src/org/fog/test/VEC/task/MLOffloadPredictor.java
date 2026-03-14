@@ -10,43 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Calls the ML prediction endpoint to decide offloading target.
- *
- * POST http://127.0.0.1:8000/predict
- *
- * Request body includes task parameters + full infrastructure state:
- * {
- *   "bandwidth_mbps": 20,
- *   "critical_task": 1,
- *   "mobility_status": "low",
- *   "number_of_instructions_mips": 1000,
- *   "Infrastructure": {
- *     "local": { "mips_available": 5000, "ram_mb": 8000 },
- *     "cloud": { "mips_available": 500000, "ram_mb": 512000 },
- *     "Rsu": {
- *       "RSU1": { "mips_available": 25000, "ram_mb": 32000, "bandwidth_mbps": 100, "sinr": 28 },
- *       ...
- *     }
- *   }
- * }
- *
- * Response:
- * {
- *   "actnet_decision": "rsu",
- *   "target_node": ["RSU3", { "RSU1": 0.17, "RSU2": 0.24, "RSU3": 0.14 }],
- *   "input_summary": { "mips": 1000.0, "mobility": "low" }
- * }
- */
+
 public class MLOffloadPredictor {
 
     private static final String PREDICT_URL = SimConstants.ML_PREDICT_URL;
     private static final int TIMEOUT_MS = SimConstants.ML_TIMEOUT_MS;
 
-    /**
-     * Queries the ML model with task + infrastructure state.
-     * On failure, returns a rule-based fallback.
-     */
     public static OffloadDecision predict(Task task, Vehicle localVehicle,
                                           CloudServer cloud, List<RSUServer> rsus) {
         try {
@@ -59,11 +28,13 @@ public class MLOffloadPredictor {
         }
     }
 
-    /**
-     * Build the new request JSON with full infrastructure state.
-     */
     private static String buildRequestJson(Task task, Vehicle localVehicle,
                                            CloudServer cloud, List<RSUServer> rsus) {
+
+        // Cap cloud values so ML doesn't always prefer cloud
+        int cloudMipsCapped = Math.min(cloud.getAvailableMips(), 10_000);
+        int cloudRamCapped  = Math.min(cloud.getAvailableRamMB(), 16_000);
+
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         sb.append("\"bandwidth_mbps\": ").append(String.format("%.1f", task.getBandwidthMbps())).append(", ");
@@ -78,19 +49,19 @@ public class MLOffloadPredictor {
         // Infrastructure block
         sb.append("\"Infrastructure\": {");
 
-        // Local (vehicle)
+        // Local (vehicle) — raw available capacity
         sb.append("\"local\": {");
         sb.append("\"mips_available\": ").append(localVehicle.getAvailableMips()).append(", ");
         sb.append("\"ram_mb\": ").append(localVehicle.getAvailableRamMB());
         sb.append("}, ");
 
-        // Cloud
+        // Cloud — capped to comparable range
         sb.append("\"cloud\": {");
-        sb.append("\"mips_available\": ").append(cloud.getAvailableMips()).append(", ");
-        sb.append("\"ram_mb\": ").append(cloud.getAvailableRamMB());
+        sb.append("\"mips_available\": ").append(cloudMipsCapped).append(", ");
+        sb.append("\"ram_mb\": ").append(cloudRamCapped);
         sb.append("}, ");
 
-        // RSUs
+        // RSUs — raw available capacity
         sb.append("\"Rsu\": {");
         for (int i = 0; i < rsus.size(); i++) {
             RSUServer rsu = rsus.get(i);
@@ -140,16 +111,6 @@ public class MLOffloadPredictor {
         return sb.toString();
     }
 
-    /**
-     * Parse the ML response JSON.
-     *
-     * Response format:
-     * {
-     *   "actnet_decision": "rsu",
-     *   "target_node": ["RSU3", {"RSU1": 0.17, "RSU2": 0.24, "RSU3": 0.14}],
-     *   "input_summary": {"mips": 1000.0, "mobility": "low"}
-     * }
-     */
     private static OffloadDecision parseResponse(String json) {
         String decision = "local";
         String targetNodeName = null;
@@ -211,10 +172,6 @@ public class MLOffloadPredictor {
 
         return new OffloadDecision(decision, targetNodeName, rsuScores);
     }
-
-    /**
-     * Find the matching closing bracket for an opening bracket at position idx.
-     */
     private static int findMatchingBracket(String json, int idx) {
         if (idx < 0 || idx >= json.length()) return -1;
         char open = json.charAt(idx);
@@ -230,40 +187,27 @@ public class MLOffloadPredictor {
         return -1;
     }
 
-    /**
-     * Rule-based fallback when ML service is unavailable.
-     *
-     * Priority order (biased toward edge):
-     *   1. LOCAL  — if task is small and mobility is low
-     *   2. RSU    — if signal is good enough and instructions are moderate
-     *   3. CLOUD  — only for large, critical, high-mobility tasks
-     *
-     * This mirrors the expected ML behaviour under normal conditions.
-     */
     private static OffloadDecision ruleBasedFallback(Task task) {
-        boolean highMobility  = task.getMobilityStatus() == Task.MobilityStatus.HIGH;
-        boolean lowMobility   = task.getMobilityStatus() == Task.MobilityStatus.LOW;
-        boolean critical      = task.getCriticalTask() == 1;
-        int     instructions  = task.getNumberOfInstructions();
-        double  bandwidth     = task.getBandwidthMbps();
+        boolean highMobility = task.getMobilityStatus() == Task.MobilityStatus.HIGH;
+        boolean lowMobility  = task.getMobilityStatus() == Task.MobilityStatus.LOW;
+        boolean medMobility  = task.getMobilityStatus() == Task.MobilityStatus.MEDIUM;
+        boolean critical     = task.getCriticalTask() == 1;
+        int     instructions = task.getNumberOfInstructions();
 
-        // Cloud: only critical + high-mobility + heavy compute
-        if (critical && highMobility && instructions > 4000) {
+        // ── Cloud: ONLY critical AND high-mobility together ──
+        if (critical && highMobility) {
             return new OffloadDecision("cloud", null, null);
         }
 
-        // Local: light tasks with low mobility
-        if (lowMobility && instructions <= 2000) {
+        // ── Local: low/medium mobility, light compute, not critical ──
+        if ((lowMobility || medMobility) && !critical && instructions <= 4_000) {
             return new OffloadDecision("local", null, null);
         }
 
-        // RSU: everything else (moderate/heavy tasks, medium/high mobility)
-        return new OffloadDecision("rsu", "RSU1", null);
+        // ── RSU: everything else ──
+        return new OffloadDecision("rsu", null, null);
     }
 
-    /**
-     * Result holder for ML prediction.
-     */
     public static class OffloadDecision {
         public final String actnetDecision;    // "local", "cloud", "rsu"
         public final String targetNodeName;    // e.g. "RSU3" (only for rsu decision)

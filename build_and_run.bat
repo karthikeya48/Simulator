@@ -31,6 +31,7 @@ REM Compile all VEC source files (including utils and scheduler packages)
 echo [1/2] Compiling source files...
 cd "%PROJECT_DIR%"
 javac -d "%BIN_DIR%" ^
+    "%SRC_DIR%\org\fog\test\VEC\config\*.java" ^
     "%SRC_DIR%\org\fog\test\VEC\infrastructure\*.java" ^
     "%SRC_DIR%\org\fog\test\VEC\utils\*.java" ^
     "%SRC_DIR%\org\fog\test\VEC\task\*.java" ^

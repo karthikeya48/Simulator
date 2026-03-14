@@ -53,22 +53,22 @@ public class TaskReleaseThread implements Runnable {
                 waitingTasks.add(newTask);
             }
 
-            // Check each task for simulated completion using manual time diff
+            // Check each task for completion using resource hold expiry
             Iterator<Task> it = waitingTasks.iterator();
-            long now = System.currentTimeMillis();
             while (it.hasNext()) {
                 Task t = it.next();
-                double elapsedSinceAssignment = now - t.getAssignmentTimeMs();
 
-                if (elapsedSinceAssignment >= t.getSimulatedExecTimeMs()) {
-                    // Release resources
+                if (t.isResourceHoldExpired()) {
+                    // Release resources — hold period has elapsed
                     t.getAssignedNode().release(t.getAllocatedMips(), t.getAllocatedRamMB());
                     t.markCompleted();
 
                     scheduler.recordCompletion(t);
 
-                    // Push to federated learning queue
-                    federatedQueue.offer(t);
+                    // Push to federated learning queue only if FL is enabled
+                    if (SimConstants.FL_ENABLED && federatedQueue != null) {
+                        federatedQueue.offer(t);
+                    }
 
                     it.remove();
                 }
